@@ -1,5 +1,7 @@
 <?php
 
+namespace Kupio\PHPAuth
+
 class Config
 {
     private $dbh;

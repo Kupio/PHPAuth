@@ -1,0 +1,35 @@
+{
+    "name": "Kupio/PHPAuth",
+    "description": "PHPAuth is a secure PHP Authentication class that easily integrates into any site. https://github.com/PHPAuth/PHPAuth",
+    "keywords": ["auth", "authorization", "php"],
+    "homepage": "https://github.com/Kupio/PHPAuth",
+    "type": "library",
+    "license": "GPL",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Jordi Boggiano",
+            "email": "j.boggiano@seld.be",
+            "homepage": "http://seld.be"
+        },
+        {
+            "name": "Ian Beveridge",
+            "email": "ian@kupio.com",
+            "homepage": "http://www.kupio.com/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.7"
+    },
+    "require-dev": {
+    },
+    "suggest": {
+    },
+    "autoload": {
+        "psr-4": {"Kupio\\PHPAuth\\": "."}
+    },
+    "provide": {
+    },
+    "extra": {
+    }
+}
