@@ -7,7 +7,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 CREATE TABLE IF NOT EXISTS `auth_attempts` (
-`id` int(11) NOT NULL,
+`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `ip` varchar(39) NOT NULL,
   `count` int(11) NOT NULL,
   `expiredate` datetime NOT NULL
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `auth_attempts` (
 
 
 CREATE TABLE IF NOT EXISTS `auth_requests` (
-`id` int(11) NOT NULL,
+`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `uid` int(11) NOT NULL,
   `rkey` varchar(20) NOT NULL,
   `expire` datetime NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `auth_requests` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `auth_sessions` (
-`id` int(11) NOT NULL,
+`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `uid` int(11) NOT NULL,
   `hash` varchar(40) NOT NULL,
   `expiredate` datetime NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `auth_sessions` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `auth_users` (
-`id` int(11) NOT NULL,
+`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `username` varchar(30) DEFAULT NULL,
   `password` varchar(60) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
@@ -42,39 +42,21 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
   `dt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER TABLE `auth_users`
- ADD PRIMARY KEY (`id`);
-
 CREATE TABLE IF NOT EXISTS `auth_roles` (
-`id` int(11) NOT NULL,
+`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `role` varchar(30) DEFAULT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-ALTER TABLE `auth_roles`
- ADD PRIMARY KEY (`id`);
-
 CREATE TABLE IF NOT EXISTS `auth_user_roles` (
-`user_id` int(11) NOT NULL,
+`user_id` int(11) NOT NULL PRIMARY KEY,
   `role_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-ALTER TABLE `auth_user_roles`
- ADD PRIMARY KEY (`user_id`);
 
 ALTER TABLE `auth_user_roles` ADD INDEX(`role_id`);
 
 ALTER TABLE `auth_user_roles` ADD  FOREIGN KEY (`user_id`) REFERENCES `auth_users`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `auth_user_roles` ADD  FOREIGN KEY (`role_id`) REFERENCES `auth_roles`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-
-ALTER TABLE `auth_attempts`
- ADD PRIMARY KEY (`id`);
-
-ALTER TABLE `auth_requests`
- ADD PRIMARY KEY (`id`);
-
-ALTER TABLE `auth_sessions`
- ADD PRIMARY KEY (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
