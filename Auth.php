@@ -681,7 +681,7 @@ class Auth
         }
 
         if($type == "activation") {
-            $message = "Account activation required : <strong><a href=\""."constant("$this->auth_const_prefix."SITE_URL")."/activate/{$key}\">Activate my account</a></strong>";
+            $message = "Account activation required : <strong><a href=\"".constant($this->auth_const_prefix."SITE_URL")."/activate/{$key}\">Activate my account</a></strong>";
             $subject = $this->auth_const_prefix.SITE_NAME." - Account Activation";
         } else {
             $message = "Password reset request : <strong><a href=\"".constant($this->auth_const_prefix."SITE_URL")."/reset/{$key}\">Reset my password</a></strong>";
