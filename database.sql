@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
   `dt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+ALTER TABLE `auth_users`
+ ADD PRIMARY KEY (`id`);
+
 CREATE TABLE IF NOT EXISTS `auth_roles` (
 `id` int(11) NOT NULL,
   `role` varchar(30) DEFAULT NULL
@@ -71,9 +74,6 @@ ALTER TABLE `auth_requests`
  ADD PRIMARY KEY (`id`);
 
 ALTER TABLE `auth_sessions`
- ADD PRIMARY KEY (`id`);
-
-ALTER TABLE `auth_users`
  ADD PRIMARY KEY (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
