@@ -42,6 +42,27 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
   `dt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `auth_roles` (
+`id` int(11) NOT NULL,
+  `role` varchar(30) DEFAULT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `auth_roles`
+ ADD PRIMARY KEY (`id`);
+
+CREATE TABLE IF NOT EXISTS `auth_user_roles` (
+`user_id` int(11) NOT NULL,
+  `role_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `auth_user_roles`
+ ADD PRIMARY KEY (`user_id`);
+
+ALTER TABLE `auth_user_roles` ADD INDEX(`role_id`);
+
+ALTER TABLE `auth_user_roles` ADD  FOREIGN KEY (`user_id`) REFERENCES `auth_users`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `auth_user_roles` ADD  FOREIGN KEY (`role_id`) REFERENCES `auth_roles`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
 
 ALTER TABLE `auth_attempts`
  ADD PRIMARY KEY (`id`);
