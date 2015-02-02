@@ -26,6 +26,11 @@ class Auth
         }
     }
 
+    public function configVal($val)
+    {
+        return constant($this->auth_const_prefix.$val);
+    }
+
     /*
     * Logs a user in
     * @param string $username
@@ -205,7 +210,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('UPDATE '.constant($this->auth_const_prefix."TABLE_USERS").' SET isactive = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal("TABLE_USERS").' SET isactive = ? WHERE id = ?');
         $query->execute(array(1, $getRequest['uid']));
 
         $this->deleteRequest($getRequest['id']);
@@ -238,7 +243,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('SELECT id FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE email = ?');
+        $query = $this->dbh->prepare('SELECT id FROM '.configVal("TABLE_USERS").' WHERE email = ?');
         $query->execute(array($email));
 
         if ($query->rowCount() == 0) {
@@ -285,7 +290,7 @@ class Auth
 
     public function getHash($string, $salt)
     {
-        return password_hash($string, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => constant($this->auth_const_prefix."BCRYPT_COST")]);
+        return password_hash($string, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => configVal("BCRYPT_COST")]);
     }
 
     /*
@@ -296,7 +301,7 @@ class Auth
 
     public function getUID($username)
     {
-        $query = $this->dbh->prepare('SELECT id FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE username = ?');
+        $query = $this->dbh->prepare('SELECT id FROM '.configVal("TABLE_USERS").' WHERE username = ?');
         $query->execute(array($username));
 
         if($query->rowCount() == 0) {
@@ -328,16 +333,16 @@ class Auth
         $this->deleteExistingSessions($uid);
 
         if($remember == true) {
-            $data['expire'] = date("Y-m-d H:i:s", strtotime(constant($this->auth_const_prefix."COOKIE_REMEMBER")));
+            $data['expire'] = date("Y-m-d H:i:s", strtotime(configVal("COOKIE_REMEMBER")));
             $data['expiretime'] = strtotime($data['expire']);
         } else {
-            $data['expire'] = date("Y-m-d H:i:s", strtotime(constant($this->auth_const_prefix."COOKIE_REMEMBER")));
+            $data['expire'] = date("Y-m-d H:i:s", strtotime(configVal("COOKIE_REMEMBER")));
             $data['expiretime'] = 0;
         }
 
-        $data['cookie_crc'] = sha1($data['hash'] . constant($this->auth_const_prefix."SITE_KEY"));
+        $data['cookie_crc'] = sha1($data['hash'] . configVal("SITE_KEY"));
 
-        $query = $this->dbh->prepare('INSERT INTO '.constant($this->auth_const_prefix."TABLE_SESSIONS").' (uid, hash, expiredate, ip, agent, cookie_crc) VALUES (?, ?, ?, ?, ?, ?)');
+        $query = $this->dbh->prepare('INSERT INTO '.configVal("TABLE_SESSIONS").' (uid, hash, expiredate, ip, agent, cookie_crc) VALUES (?, ?, ?, ?, ?, ?)');
 
         if(!$query->execute(array($uid, $data['hash'], $data['expire'], $ip, $agent, $data['cookie_crc']))) {
             return false;
@@ -355,7 +360,7 @@ class Auth
 
     private function deleteExistingSessions($uid)
     {
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE uid = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_SESSIONS").' WHERE uid = ?');
 
         return $query->execute(array($uid));
     }
@@ -368,7 +373,7 @@ class Auth
 
     private function deleteSession($hash)
     {
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE hash = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_SESSIONS").' WHERE hash = ?');
 
         return $query->execute(array($hash));
     }
@@ -381,7 +386,7 @@ class Auth
 
     public function getSessionUID($hash)
     {
-        $query = $this->dbh->prepare('SELECT uid FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE hash = ?');
+        $query = $this->dbh->prepare('SELECT uid FROM '.configVal("TABLE_SESSIONS").' WHERE hash = ?');
         $query->execute(array($hash));
 
         if ($query->rowCount() == 0) {
@@ -409,7 +414,7 @@ class Auth
             return false;
         }
 
-        $query = $this->dbh->prepare('SELECT id, uid, expiredate, ip, agent, cookie_crc FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE hash = ?');
+        $query = $this->dbh->prepare('SELECT id, uid, expiredate, ip, agent, cookie_crc FROM '.configVal("TABLE_SESSIONS").' WHERE hash = ?');
         $query->execute(array($hash));
 
         if ($query->rowCount() == 0) {
@@ -442,7 +447,7 @@ class Auth
             return $this->updateSessionIp($sid, $ip);
         }
 
-        if ($db_cookie == sha1($hash . constant($this->auth_const_prefix."SITE_KEY"))) {
+        if ($db_cookie == sha1($hash . configVal("SITE_KEY"))) {
             return true;
         }
 
@@ -458,7 +463,7 @@ class Auth
 
     private function updateSessionIp($sid, $ip)
     {
-        $query = $this->dbh->prepare('UPDATE '.constant($this->auth_const_prefix."TABLE_SESSIONS").' SET ip = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal("TABLE_SESSIONS").' SET ip = ? WHERE id = ?');
         return $query->execute(array($ip, $sid));
     }
 
@@ -470,7 +475,7 @@ class Auth
 
     private function isEmailTaken($email)
     {
-        $query = $this->dbh->prepare('SELECT * FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE email = ?');
+        $query = $this->dbh->prepare('SELECT * FROM '.configVal("TABLE_USERS").' WHERE email = ?');
         $query->execute(array($email));
 
         if ($query->rowCount() == 0) {
@@ -507,7 +512,7 @@ class Auth
     {
         $return['error'] = 1;
 
-        $query = $this->dbh->prepare('INSERT INTO '.constant($this->auth_const_prefix."TABLE_USERS").' VALUES ()');
+        $query = $this->dbh->prepare('INSERT INTO '.configVal("TABLE_USERS").' VALUES ()');
 
         if(!$query->execute()) {
             $return['message'] = "system_error";
@@ -520,7 +525,7 @@ class Auth
         $addRequest = $this->addRequest($uid, $email, "activation");
 
         if($addRequest['error'] == 1) {
-            $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE id = ?');
+            $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_USERS").' WHERE id = ?');
             $query->execute(array($uid));
 
             $return['message'] = $addRequest['message'];
@@ -532,10 +537,10 @@ class Auth
         $username = htmlentities(strtolower($username));
         $password = $this->getHash($password, $salt);
 
-        $query = $this->dbh->prepare('UPDATE '.constant($this->auth_const_prefix."TABLE_USERS").' SET username = ?, password = ?, email = ?, salt = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal("TABLE_USERS").' SET username = ?, password = ?, email = ?, salt = ? WHERE id = ?');
 
         if(!$query->execute(array($username, $password, $email, $salt, $uid))) {
-            $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE id = ?');
+            $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_USERS").' WHERE id = ?');
             $query->execute(array($uid));
 
             $return['message'] = "system_error";
@@ -554,7 +559,7 @@ class Auth
 
     public function getUser($uid)
     {
-        $query = $this->dbh->prepare('SELECT username, password, email, salt, isactive FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE id = ?');
+        $query = $this->dbh->prepare('SELECT username, password, email, salt, isactive FROM '.configVal("TABLE_USERS").' WHERE id = ?');
         $query->execute(array($uid));
 
         if ($query->rowCount() == 0) {
@@ -605,21 +610,21 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE id = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_USERS").' WHERE id = ?');
 
         if(!$query->execute(array($uid))) {
             $return['message'] = "system_error";
             return $return;
         }
 
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE uid = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_SESSIONS").' WHERE uid = ?');
 
         if(!$query->execute(array($uid))) {
             $return['message'] = "system_error";
             return $return;
         }
 
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_REQUESTS").' WHERE uid = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_REQUESTS").' WHERE uid = ?');
 
         if(!$query->execute(array($uid))) {
             $return['message'] = "system_error";
@@ -648,7 +653,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('SELECT id, expire FROM '.constant($this->auth_const_prefix."TABLE_REQUESTS").' WHERE uid = ? AND type = ?');
+        $query = $this->dbh->prepare('SELECT id, expire FROM '.configVal("TABLE_REQUESTS").' WHERE uid = ? AND type = ?');
         $query->execute(array($uid, $type));
 
         if($query->rowCount() > 0) {
@@ -673,7 +678,7 @@ class Auth
         $key = $this->getRandomKey(20);
         $expire = date("Y-m-d H:i:s", strtotime("+1 day"));
 
-        $query = $this->dbh->prepare('INSERT INTO '.constant($this->auth_const_prefix."TABLE_REQUESTS").' (uid, rkey, expire, type) VALUES (?, ?, ?, ?)');
+        $query = $this->dbh->prepare('INSERT INTO '.configVal("TABLE_REQUESTS").' (uid, rkey, expire, type) VALUES (?, ?, ?, ?)');
 
         if(!$query->execute(array($uid, $key, $expire, $type))) {
             $return['message'] = "system_error";
@@ -681,10 +686,10 @@ class Auth
         }
 
         if($type == "activation") {
-            $message = "Account activation required : <strong><a href=\"".constant($this->auth_const_prefix."SITE_URL")."/activate/{$key}\">Activate my account</a></strong>";
+            $message = "Account activation required : <strong><a href=\"".configVal("SITE_URL")."/activate/{$key}\">Activate my account</a></strong>";
             $subject = $this->auth_const_prefix.SITE_NAME." - Account Activation";
         } else {
-            $message = "Password reset request : <strong><a href=\"".constant($this->auth_const_prefix."SITE_URL")."/reset/{$key}\">Reset my password</a></strong>";
+            $message = "Password reset request : <strong><a href=\"".configVal("SITE_URL")."/reset/{$key}\">Reset my password</a></strong>";
             $subject = $this->auth_const_prefix.SITE_NAME." - Password reset request";
         }
 
@@ -712,7 +717,7 @@ class Auth
     {
         $return['error'] = 1;
 
-        $query = $this->dbh->prepare('SELECT id, uid, expire FROM '.constant($this->auth_const_prefix."TABLE_REQUESTS").' WHERE rkey = ? AND type = ?');
+        $query = $this->dbh->prepare('SELECT id, uid, expire FROM '.configVal("TABLE_REQUESTS").' WHERE rkey = ? AND type = ?');
         $query->execute(array($key, $type));
 
         if ($query->rowCount() === 0) {
@@ -751,7 +756,7 @@ class Auth
 
     private function deleteRequest($id)
     {
-        $query = $this->dbh->prepare('DELETE FROM '.constant($this->auth_const_prefix."TABLE_REQUESTS").' WHERE id = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal("TABLE_REQUESTS").' WHERE id = ?');
         return $query->execute(array($id));
     }
 
@@ -904,7 +909,7 @@ class Auth
 
         $password = $this->getHash($password, $user['salt']);
 
-        $query = $this->dbh->prepare('UPDATE '.constant($this->auth_const_prefix."TABLE_USERS").' SET password = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal("TABLE_USERS").' SET password = ? WHERE id = ?');
         $query->execute(array($password, $data['uid']));
 
         if ($query->rowCount() == 0) {
@@ -942,7 +947,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('SELECT id FROM '.constant($this->auth_const_prefix."TABLE_USERS").' WHERE email = ?');
+        $query = $this->dbh->prepare('SELECT id FROM '.configVal("TABLE_USERS").' WHERE email = ?');
         $query->execute(array($email));
 
         if($query->rowCount() == 0) {
@@ -987,7 +992,7 @@ class Auth
             return false;
         }
 
-        $query = $this->dbh->prepare('SELECT uid FROM '.constant($this->auth_const_prefix."TABLE_SESSIONS").' WHERE hash = ?');
+        $query = $this->dbh->prepare('SELECT uid FROM '.configVal("TABLE_SESSIONS").' WHERE hash = ?');
         $query->execute(array($hash));
 
         if($query->rowCount() == 0) {
