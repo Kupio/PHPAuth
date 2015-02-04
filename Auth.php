@@ -1061,7 +1061,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('UPDATE '.PHPAUTH_TABLE_USERS.' SET password = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal('TABLE_USERS').' SET password = ? WHERE id = ?');
         $query->execute(array($newpass, $uid));
 
         $return['error'] = 0;
@@ -1077,7 +1077,7 @@ class Auth
 
     public function getEmail($uid)
     {
-        $query = $this->dbh->prepare('SELECT email FROM '.PHPAUTH_TABLE_USERS.' WHERE id = ?');
+        $query = $this->dbh->prepare('SELECT email FROM '.configVal('TABLE_USERS').' WHERE id = ?');
         $query->execute(array($uid));
         $row = $query->fetch(PDO::FETCH_ASSOC);
 
@@ -1143,7 +1143,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('UPDATE '.PHPAUTH_TABLE_USERS.' SET email = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.configVal('TABLE_USERS').' SET email = ? WHERE id = ?');
         $query->execute(array($email, $uid));
 
         if ($query->rowCount() == 0) {
@@ -1165,7 +1165,7 @@ class Auth
     {
         $ip = $this->getIp();
 
-        $query = $this->dbh->prepare('SELECT count, expiredate FROM '.PHPAUTH_TABLE_ATTEMPTS.' WHERE ip = ?');
+        $query = $this->dbh->prepare('SELECT count, expiredate FROM '.configVal('TABLE_ATTEMPTS').' WHERE ip = ?');
         $query->execute(array($ip));
 
         if($query->rowCount() == 0) {
@@ -1202,7 +1202,7 @@ class Auth
     {
         $ip = $this->getIp();
 
-        $query = $this->dbh->prepare('SELECT count FROM '.PHPAUTH_TABLE_ATTEMPTS.' WHERE ip = ?');
+        $query = $this->dbh->prepare('SELECT count FROM '.configVal('TABLE_ATTEMPTS').' WHERE ip = ?');
         $query->execute(array($ip));
 
         $row = $query->fetch(PDO::FETCH_ASSOC);
@@ -1212,13 +1212,13 @@ class Auth
         if (!$row) {
             $attempt_count = 1;
 
-            $query = $this->dbh->prepare('INSERT INTO '.PHPAUTH_TABLE_ATTEMPTS.' (ip, count, expiredate) VALUES (?, ?, ?)');
+            $query = $this->dbh->prepare('INSERT INTO '.configVal('TABLE_ATTEMPTS').' (ip, count, expiredate) VALUES (?, ?, ?)');
             return $query->execute(array($ip, $attempt_count, $attempt_expiredate));
         }
 
         $attempt_count = $row['count'] + 1;
 
-        $query = $this->dbh->prepare('UPDATE '.PHPAUTH_TABLE_ATTEMPTS.' SET count=?, expiredate=? WHERE ip=?');
+        $query = $this->dbh->prepare('UPDATE '.configVal('TABLE_ATTEMPTS').' SET count=?, expiredate=? WHERE ip=?');
         return $query->execute(array($attempt_count, $attempt_expiredate, $ip));
     }
 
@@ -1230,7 +1230,7 @@ class Auth
 
     private function deleteAttempts($ip)
     {
-        $query = $this->dbh->prepare('DELETE FROM '.PHPAUTH_TABLE_ATTEMPTS.' WHERE ip = ?');
+        $query = $this->dbh->prepare('DELETE FROM '.configVal('TABLE_ATTEMPTS').' WHERE ip = ?');
         return $query->execute(array($ip));
     }
 
