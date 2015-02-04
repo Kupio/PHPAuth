@@ -253,7 +253,7 @@ class Auth
             return $return;
         }
 
-        if ($this->addRequest($query->fetch(PDO::FETCH_ASSOC)['id'], $email, "reset")['error'] == 1) {
+        if ($this->addRequest($query->fetch(\PDO::FETCH_ASSOC)['id'], $email, "reset")['error'] == 1) {
             $this->addAttempt();
 
             $return['message'] = $addRequest['message'];
@@ -290,7 +290,7 @@ class Auth
 
     public function getHash($string, $salt)
     {
-        return password_hash($string, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => configVal("BCRYPT_COST")]);
+        return password_hash($string, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => $this->configVal("BCRYPT_COST")]);
     }
 
     /*
@@ -308,7 +308,7 @@ class Auth
             return false;
         }
 
-        return $query->fetch(PDO::FETCH_ASSOC)['id'];
+        return $query->fetch(\PDO::FETCH_ASSOC)['id'];
     }
 
     /*
@@ -333,14 +333,14 @@ class Auth
         $this->deleteExistingSessions($uid);
 
         if($remember == true) {
-            $data['expire'] = date("Y-m-d H:i:s", strtotime(configVal("COOKIE_REMEMBER")));
+            $data['expire'] = date("Y-m-d H:i:s", strtotime($this->configVal("COOKIE_REMEMBER")));
             $data['expiretime'] = strtotime($data['expire']);
         } else {
-            $data['expire'] = date("Y-m-d H:i:s", strtotime(configVal("COOKIE_REMEMBER")));
+            $data['expire'] = date("Y-m-d H:i:s", strtotime($this->configVal("COOKIE_REMEMBER")));
             $data['expiretime'] = 0;
         }
 
-        $data['cookie_crc'] = sha1($data['hash'] . configVal("SITE_KEY"));
+        $data['cookie_crc'] = sha1($data['hash'] . $this->configVal("SITE_KEY"));
 
         $query = $this->dbh->prepare('INSERT INTO '.$this->configVal("TABLE_SESSIONS").' (uid, hash, expiredate, ip, agent, cookie_crc) VALUES (?, ?, ?, ?, ?, ?)');
 
@@ -393,7 +393,7 @@ class Auth
             return false;
         }
 
-        return $query->fetch(PDO::FETCH_ASSOC)['uid'];
+        return $query->fetch(\PDO::FETCH_ASSOC)['uid'];
     }
 
     /*
@@ -421,7 +421,7 @@ class Auth
             return false;
         }
 
-        $row = $query->fetch(PDO::FETCH_ASSOC);
+        $row = $query->fetch(\PDO::FETCH_ASSOC);
 
         $sid = $row['id'];
         $uid = $row['uid'];
@@ -447,7 +447,7 @@ class Auth
             return $this->updateSessionIp($sid, $ip);
         }
 
-        if ($db_cookie == sha1($hash . configVal("SITE_KEY"))) {
+        if ($db_cookie == sha1($hash . $this->configVal("SITE_KEY"))) {
             return true;
         }
 
@@ -566,7 +566,7 @@ class Auth
             return false;
         }
 
-        $data = $query->fetch(PDO::FETCH_ASSOC);
+        $data = $query->fetch(\PDO::FETCH_ASSOC);
 
         if (!$data) {
             return false;
@@ -657,7 +657,7 @@ class Auth
         $query->execute(array($uid, $type));
 
         if($query->rowCount() > 0) {
-            $row = $query->fetch(PDO::FETCH_ASSOC);
+            $row = $query->fetch(\PDO::FETCH_ASSOC);
 
             $expiredate = strtotime($row['expire']);
             $currentdate = strtotime(date("Y-m-d H:i:s"));
@@ -686,16 +686,16 @@ class Auth
         }
 
         if($type == "activation") {
-            $message = "Account activation required : <strong><a href=\"".$this->configVal("SITE_URL")."/activate/{$key}\">Activate my account</a></strong>";
-            $subject = $this->auth_const_prefix.SITE_NAME." - Account Activation";
+            $message = "Account activation required : <strong><a href=\"".$this->configVal("SITE_URL")."activate/{$key}\">Activate my account</a></strong>";
+            $subject = $this->configVal('SITE_NAME')." - Account Activation";
         } else {
-            $message = "Password reset request : <strong><a href=\"".$this->configVal("SITE_URL")."/reset/{$key}\">Reset my password</a></strong>";
-            $subject = $this->auth_const_prefix.SITE_NAME." - Password reset request";
+            $message = "Password reset request : <strong><a href=\"".$this->configVal("SITE_URL")."reset/{$key}\">Reset my password</a></strong>";
+            $subject = $this->configVal('SITE_NAME')." - Password reset request";
         }
 
         $headers  = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= "From: ".$this->auth_const_prefix.SITE_EMAIL."\r\n";
+        $headers .= "From: ".$this->configVal('SITE_EMAIL')."\r\n";
 
         if(!mail($email, $subject, $message, $headers)) {
             $return['message'] = "system_error";
@@ -957,7 +957,7 @@ class Auth
             return $return;
         }
 
-        $row = $query->fetch(PDO::FETCH_ASSOC);
+        $row = $query->fetch(\PDO::FETCH_ASSOC);
 
         if ($this->getUser($row['id'])['isactive'] == 1) {
             $this->addAttempt();
@@ -999,7 +999,7 @@ class Auth
             return false;
         }
 
-        return $query->fetch(PDO::FETCH_ASSOC)['uid'];
+        return $query->fetch(\PDO::FETCH_ASSOC)['uid'];
     }
 
     /*
@@ -1079,7 +1079,7 @@ class Auth
     {
         $query = $this->dbh->prepare('SELECT email FROM '.$this->configVal('TABLE_USERS').' WHERE id = ?');
         $query->execute(array($uid));
-        $row = $query->fetch(PDO::FETCH_ASSOC);
+        $row = $query->fetch(\PDO::FETCH_ASSOC);
 
         if (!$row) {
             return false;
@@ -1172,7 +1172,7 @@ class Auth
             return false;
         }
 
-        $row = $query->fetch(PDO::FETCH_ASSOC);
+        $row = $query->fetch(\PDO::FETCH_ASSOC);
 
         $expiredate = strtotime($row['expiredate']);
         $currentdate = strtotime(date("Y-m-d H:i:s"));
@@ -1205,7 +1205,7 @@ class Auth
         $query = $this->dbh->prepare('SELECT count FROM '.$this->configVal('TABLE_ATTEMPTS').' WHERE ip = ?');
         $query->execute(array($ip));
 
-        $row = $query->fetch(PDO::FETCH_ASSOC);
+        $row = $query->fetch(\PDO::FETCH_ASSOC);
 
         $attempt_expiredate = date("Y-m-d H:i:s", strtotime("+30 minutes"));
 
