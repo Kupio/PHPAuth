@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `auth_roles` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `auth_user_roles` (
-`user_id` int(11) NOT NULL PRIMARY KEY,
+`user_id` int(11) NOT NULL,
   `role_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

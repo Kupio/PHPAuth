@@ -110,6 +110,47 @@ class Auth
         return $return;
     }
 
+    public function setRoles($uid, $roles, $log)
+    {
+        $return['error'] = 1;
+        foreach ($roles as $role) {
+            $query = $this->dbh->prepare('SELECT COUNT(*) FROM `admin_auth_roles` WHERE role=?');
+            $query->execute(array($role));
+
+            if(!$query->fetchColumn()) {
+                $return['message'] = "bad_role";
+                return $return;
+            }
+        }
+
+        try {
+
+            $this->dbh->beginTransaction();
+
+            $query = $this->dbh->prepare('DELETE FROM '.$this->configVal("TABLE_USER_ROLES").' WHERE user_id = ?;');
+            $query->execute(array($uid));
+
+            foreach ($roles as $role) {
+                $query = $this->dbh->prepare('INSERT INTO '.$this->configVal("TABLE_USER_ROLES").' (user_id, role_id) SELECT ?, id FROM '.$this->configVal("TABLE_ROLES").' WHERE role=?;');
+                $query->execute(array($uid, $role));
+            }
+
+            $this->dbh->commit();
+
+        } catch (Exception $e) {
+
+            $this->dbh->rollBack();
+
+            $return['message'] = "no_role_set";
+            return $return;
+        }
+
+        $return['error'] = 0;
+        $return['message'] = "roles_set";
+
+        return $return;
+    }
+
     /*
     * Creates a new user, adds them to database
     * @param string $email
