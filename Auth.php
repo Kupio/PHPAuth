@@ -110,7 +110,7 @@ class Auth
         return $return;
     }
 
-    public function setRoles($uid, $roles, $log)
+    public function setRoles($uid, $roles)
     {
         $return['error'] = 1;
         foreach ($roles as $role) {
