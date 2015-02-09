@@ -121,7 +121,7 @@ class Auth
     {
         $return['error'] = 1;
         foreach ($roles as $role) {
-            $query = $this->dbh->prepare('SELECT COUNT(*) FROM `admin_auth_roles` WHERE role=?');
+            $query = $this->dbh->prepare('SELECT COUNT(*) FROM '.$this->configVal("TABLE_ROLES").' WHERE role=?');
             $query->execute(array($role));
 
             if(!$query->fetchColumn()) {
@@ -181,6 +181,8 @@ class Auth
             if ($username != $email) {
                 $return['message'] = 'username_email_mismatch';
                 return $return;
+            } else {
+                $validateUsername['error'] = 0;
             }
         } else {
             $validateUsername = $this->validateUsername($username);
