@@ -11,6 +11,7 @@ class Auth
 {
     private $dbh;
     private $auth_const_prefix;
+    private $email_as_username;
 
     /*
     * Initiates database connection
@@ -20,6 +21,8 @@ class Auth
     {
         $this->dbh = $dbh;
         $this->auth_const_prefix = $auth_const_prefix;
+
+        $this->email_as_username = ($this->configVal("EMAIL_USERNAME") == '1');
 
         if (version_compare(phpversion(), '5.5.0', '<')) {
             require("files/password.php");
@@ -49,7 +52,11 @@ class Auth
             return $return;
         }
 
-        $validateUsername = $this->validateUsername($username);
+        if ($this->email_as_username) {
+            $validateUsername = $this->validateEmail($username);
+        } else {
+            $validateUsername = $this->validateUsername($username);
+        }
         $validatePassword = $this->validatePassword($password);
 
         if ($validateUsername['error'] == 1) {
@@ -170,7 +177,14 @@ class Auth
         }
 
         $validateEmail = $this->validateEmail($email);
-        $validateUsername = $this->validateUsername($username);
+        if ($this->email_as_username) {
+            if ($username != $email) {
+                $return['message'] = 'username_email_mismatch';
+                return $return;
+            }
+        } else {
+            $validateUsername = $this->validateUsername($username);
+        }
         $validatePassword = $this->validatePassword($password);
 
         if ($validateEmail['error'] == 1) {

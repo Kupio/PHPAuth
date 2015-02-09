@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `auth_sessions` (
 
 CREATE TABLE IF NOT EXISTS `auth_users` (
 `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `username` varchar(30) DEFAULT NULL,
+  `username` varchar(100) DEFAULT NULL,
   `password` varchar(60) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `salt` varchar(22) DEFAULT NULL,

@@ -41,10 +41,6 @@ The database table `config` contains multiple parameters allowing you to configu
 * `site_url`: the URL of the Auth root, where you installed the system, without the trailing slash, used for emails.
 * `site_email` : the email address from which to send activation and password reset emails
 * `cookie_name` : the name of the cookie that contains session information, do not change unless necessary
-* `cookie_path` : the path of the session cookie, do not change unless necessary
-* `cookie_domain` : the domain of the session cookie, do not change unless necessary
-* `cookie_secure` : the HTTPS only setting of the session cookie, do not change unless necessary
-* `cookie_http` : the HTTP only protocol setting of the session cookie, do not change unless necessary
 * `site_key` : a random string that you should modify used to validate cookies to ensure they are not tampered with
 * `cookie_remember` : the time that a user will remain logged in for when ticking "remember me" on login. Must respect PHP's [strtotime](http://php.net/manual/en/function.strtotime.php) format.
 * `cookie_forget` : the time a user will remain logged in when not ticking "remember me" on login.  Must respect PHP's [strtotime](http://php.net/manual/en/function.strtotime.php) format.
@@ -62,16 +58,16 @@ Making a page accessible only to authenticated users is quick and easy, requirin
 include("config.class.php");
 include("auth.class.php");
 
-    
+
 $dbh = new PDO("mysql:host=localhost;dbname=phpauth", "username", "password");
 
 $config = new Config($dbh);
 $auth = new Auth($dbh, $config);
-    
+
 if(!isset($_COOKIE[$config->cookie_name]) || !$auth->checkSession($_COOKIE[$config->cookie_name])) {
     header('HTTP/1.0 403 Forbidden');
     echo "Forbidden";
-	    
+
     exit();
 }
 ?>
