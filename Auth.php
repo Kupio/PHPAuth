@@ -117,6 +117,22 @@ class Auth
         return $return;
     }
 
+    public function getRoles($uid)
+    {
+        $return['error'] = 1;
+
+        $query = $this->dbh->prepare('SELECT role FROM '.$this->configVal("TABLE_USER_ROLES").' LEFT JOIN '.$this->configVal("TABLE_ROLES").' ON role_id='.$this->configVal("TABLE_ROLES").'.id WHERE user_id=?');
+        $query->execute(array($uid));
+
+        $result = $query->fetchAll();
+
+        $func = function($value) {
+            return $value['role'];
+        };
+
+        return array_map($func, $result);
+    }
+
     public function setRoles($uid, $roles)
     {
         $return['error'] = 1;
@@ -627,6 +643,25 @@ class Auth
 
         if (!$data) {
             return false;
+        }
+
+        $data['uid'] = $uid;
+        return $data;
+    }
+
+    public function getIdentity($uid)
+    {
+        $query = $this->dbh->prepare('SELECT username, email, isactive FROM '.$this->configVal("TABLE_USERS").' WHERE id = ?');
+        $query->execute(array($uid));
+
+        if ($query->rowCount() == 0) {
+            return null;
+        }
+
+        $data = $query->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$data) {
+            return null;
         }
 
         $data['uid'] = $uid;
