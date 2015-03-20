@@ -546,7 +546,7 @@ class Auth
     * @return boolean
     */
 
-    private function isEmailTaken($email)
+    public function isEmailTaken($email)
     {
         $query = $this->dbh->prepare('SELECT * FROM '.$this->configVal("TABLE_USERS").' WHERE email = ?');
         $query->execute(array($email));
