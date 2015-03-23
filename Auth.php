@@ -23,6 +23,8 @@ class Auth
         $this->auth_const_prefix = $auth_const_prefix;
 
         $this->email_as_username = ($this->configVal("EMAIL_USERNAME") == '1');
+        $this->allow_inactive = ($this->configVal("ALLOW_INACTIVE") == '1');
+        $this->allow_unlimited_attempts = ($this->configVal("ALLOW_UNLIMITED_ATTEMPTS") == '1');
 
         if (version_compare(phpversion(), '5.5.0', '<')) {
             require("files/password.php");
@@ -94,11 +96,13 @@ class Auth
             return $return;
         }
 
-        if ($user['isactive'] != 1) {
-            $this->addAttempt();
+        if (!$this->allow_inactive) {
+            if ($user['isactive'] != 1) {
+                $this->addAttempt();
 
-            $return['message'] = "account_inactive";
-            return $return;
+                $return['message'] = "account_inactive";
+                return $return;
+            }
         }
 
         $sessiondata = $this->addSession($user['uid'], $remember);
@@ -1271,7 +1275,9 @@ class Auth
 
         if ($row['count'] == 5) {
             if ($currentdate < $expiredate) {
-                return true;
+                /* Prefer this to a trivial reject at the start of the function because it means the housekeeping
+                 * is still done and we can switch it on at any time with historical data. */
+                return !$this->allow_unlimited_attempts;
             }
 
             $this->deleteAttempts($ip);
