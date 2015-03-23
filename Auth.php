@@ -12,6 +12,7 @@ class Auth
     private $dbh;
     private $auth_const_prefix;
     private $email_as_username;
+    private $email_generator;
 
     /*
     * Initiates database connection
@@ -25,9 +26,10 @@ class Auth
         $this->email_as_username = ($this->configVal("EMAIL_USERNAME") == '1');
         $this->allow_inactive = ($this->configVal("ALLOW_INACTIVE") == '1');
         $this->allow_unlimited_attempts = ($this->configVal("ALLOW_UNLIMITED_ATTEMPTS") == '1');
+        $this->send_emails = ($this->configVal("SEND_EMAILS") == '1');
 
         if (version_compare(phpversion(), '5.5.0', '<')) {
-            require("files/password.php");
+            require_once("files/password.php");
         }
     }
 
@@ -244,6 +246,11 @@ class Auth
             return $return;
         }
 
+        if (!$this->send_emails) {
+            $return['email_type'] = $addUser['email_type'];
+            $return['email_url'] = $addUser['email_url'];
+        }
+
         $return['error'] = 0;
         $return['message'] = "register_success";
 
@@ -330,7 +337,8 @@ class Auth
             return $return;
         }
 
-        if ($this->addRequest($query->fetch(\PDO::FETCH_ASSOC)['id'], $email, "reset")['error'] == 1) {
+        $addRequest = $this->addRequest($query->fetch(\PDO::FETCH_ASSOC)['id'], $email, "reset");
+        if (['error'] == 1) {
             $this->addAttempt();
 
             $return['message'] = $addRequest['message'];
@@ -339,6 +347,10 @@ class Auth
 
         $return['error'] = 0;
         $return['message'] = "reset_requested";
+        if (!$this->send_emails) {
+            $return['email_type'] = $addRequest['email_type'];
+            $return['email_url'] = $addRequest['email_url'];
+        }
 
         return $return;
     }
@@ -609,6 +621,11 @@ class Auth
             return $return;
         }
 
+        if (!$this->send_emails) {
+            $return['email_type'] = $addRequest['email_type'];
+            $return['email_url'] = $addRequest['email_url'];
+        }
+
         $salt = substr(strtr(base64_encode(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM)), '+', '.'), 0, 22);
 
         $username = htmlentities(strtolower($username));
@@ -781,21 +798,31 @@ class Auth
             return $return;
         }
 
-        if($type == "activation") {
-            $message = "Account activation required : <strong><a href=\"".$this->configVal("SITE_URL")."activate/{$key}\">Activate my account</a></strong>";
-            $subject = $this->configVal('SITE_NAME')." - Account Activation";
+        if ($this->send_emails) {
+            if($type == "activation") {
+                $subject = $this->configVal('SITE_NAME')." - Account Activation";
+                $message = "Account activation required : <strong><a href=\"".$this->configVal("SITE_URL")."activate/{$key}\">Activate my account</a></strong>";
+            } else {
+                $subject = $this->configVal('SITE_NAME')." - Password reset request";
+                $message = "Password reset request : <strong><a href=\"".$this->configVal("SITE_URL")."reset/{$key}\">Reset my password</a></strong>";
+            }
+
+            $headers  = 'MIME-Version: 1.0' . "\r\n";
+            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+            $headers .= "From: ".$this->configVal('SITE_EMAIL')."\r\n";
+
+            if(!mail($email, $subject, $message, $headers)) {
+                $return['message'] = "system_error";
+                return $return;
+            }
+
         } else {
-            $message = "Password reset request : <strong><a href=\"".$this->configVal("SITE_URL")."reset/{$key}\">Reset my password</a></strong>";
-            $subject = $this->configVal('SITE_NAME')." - Password reset request";
-        }
-
-        $headers  = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= "From: ".$this->configVal('SITE_EMAIL')."\r\n";
-
-        if(!mail($email, $subject, $message, $headers)) {
-            $return['message'] = "system_error";
-            return $return;
+            $return['email_type'] = $type;
+            if($type == "activation") {
+                $return['email_url'] = $this->configVal("SITE_URL")."activate/{$key}";
+            } else {
+                $return['email_url'] = $this->configVal("SITE_URL")."reset/{$key}";
+            }
         }
 
         $return['error'] = 0;
@@ -1069,6 +1096,11 @@ class Auth
 
             $return['message'] = $addRequest['message'];
             return $return;
+        }
+
+        if (!$this->send_emails) {
+            $return['email_type'] = $addRequest['email_type'];
+            $return['email_url'] = $addRequest['email_url'];
         }
 
         $return['error'] = 0;
