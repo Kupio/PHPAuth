@@ -43,10 +43,11 @@ class Auth
     * @param string $username
     * @param string $password
     * @param bool $remember
+    * @param bool $logoutOtherSessions
     * @return array $return
     */
 
-    public function login($username, $password, $remember = 0)
+    public function login($username, $password, $remember = 0, $logoutOtherSessions = 1)
     {
         $return['error'] = 1;
 
@@ -107,7 +108,7 @@ class Auth
             }
         }
 
-        $sessiondata = $this->addSession($user['uid'], $remember);
+        $sessiondata = $this->addSession($user['uid'], $remember, $logoutOtherSessions);
 
         if($sessiondata == false) {
             $return['message'] = "system_error";
@@ -407,7 +408,7 @@ class Auth
     * @return array $data
     */
 
-    private function addSession($uid, $remember)
+    private function addSession($uid, $remember, $logoutOtherSessions)
     {
         $ip = $this->getIp();
         $user = $this->getUser($uid);
@@ -419,7 +420,11 @@ class Auth
         $data['hash'] = sha1($user['salt'] . microtime());
         $agent = $_SERVER['HTTP_USER_AGENT'];
 
-        $this->deleteExistingSessions($uid);
+        if ($logoutOtherSessions) {
+            $this->deleteExistingSessions($uid);
+        } else {
+            $this->deleteExpiredSessions($uid);
+        }
 
         if($remember == true) {
             $data['expire'] = date("Y-m-d H:i:s", strtotime($this->configVal("COOKIE_REMEMBER")));
@@ -450,6 +455,32 @@ class Auth
     private function deleteExistingSessions($uid)
     {
         $query = $this->dbh->prepare('DELETE FROM '.$this->configVal("TABLE_SESSIONS").' WHERE uid = ?');
+
+        return $query->execute(array($uid));
+    }
+
+    /*
+    * Removes all existing sessions for a given UID
+    * @param int $uid
+    * @return boolean
+    */
+
+    private function deleteSession($sid)
+    {
+        $query = $this->dbh->prepare('DELETE FROM '.$this->configVal("TABLE_SESSIONS").' WHERE id = ?');
+
+        return $query->execute(array($sid));
+    }
+
+    /*
+    * Removes all expired sessions for a given UID
+    * @param int $uid
+    * @return boolean
+    */
+
+    private function deleteExpiredSessions($uid)
+    {
+        $query = $this->dbh->prepare('DELETE FROM '.$this->configVal("TABLE_SESSIONS").' WHERE uid = ? AND expiredate < CURRENT_TIMESTAMP');
 
         return $query->execute(array($uid));
     }
@@ -503,6 +534,8 @@ class Auth
             return false;
         }
 
+        $this->deleteExpiredSessions($uid);
+
         $query = $this->dbh->prepare('SELECT id, uid, expiredate, ip, agent, cookie_crc FROM '.$this->configVal("TABLE_SESSIONS").' WHERE hash = ?');
         $query->execute(array($hash));
 
@@ -520,15 +553,9 @@ class Auth
         $db_agent = $row['agent'];
         $db_cookie = $row['cookie_crc'];
 
-        if ($currentdate > $expiredate) {
-            $this->deleteExistingSessions($uid);
-
-            return false;
-        }
-
         if ($ip != $db_ip) {
             if ($_SERVER['HTTP_USER_AGENT'] != $db_agent) {
-                $this->deleteExistingSessions($uid);
+                $this->deleteSession($sid);
 
                 return false;
             }
