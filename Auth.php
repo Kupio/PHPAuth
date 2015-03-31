@@ -1043,29 +1043,37 @@ class Auth
             return $return;
         }
 
-        $user = $this->getUser($data['uid']);
+
+        $uid = $data['uid'];
+
+        $user = $this->getUser($uid);
 
         if(!$user) {
             $this->addAttempt();
-            $this->deleteRequest($data['id']);
+            $this->deleteRequest(intval($data['id']));
 
             $return['message'] = "system_error";
             return $return;
         }
 
-
+        if(password_verify($password, $user['password'])) {
+            $this->deleteRequest(intval($data['id']));
+            $return['error'] = 0;
+            $return['message'] = "password_reset";
+            return $return;
+        }
 
         $password = $this->getHash($password, $user['salt']);
 
         $query = $this->dbh->prepare('UPDATE '.$this->configVal("TABLE_USERS").' SET password = ? WHERE id = ?');
-        $query->execute(array($password, $data['uid']));
+        $query->execute(array($password, $uid));
 
         if ($query->rowCount() == 0) {
             $return['message'] = "system_error";
             return $return;
         }
 
-        $this->deleteRequest($data['id']);
+        $this->deleteRequest(intval($data['id']));
 
         $return['error'] = 0;
         $return['message'] = "password_reset";
