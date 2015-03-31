@@ -465,7 +465,7 @@ class Auth
     * @return boolean
     */
 
-    private function deleteSession($sid)
+    private function deleteSessionById($sid)
     {
         $query = $this->dbh->prepare('DELETE FROM '.$this->configVal("TABLE_SESSIONS").' WHERE id = ?');
 
@@ -555,7 +555,7 @@ class Auth
 
         if ($ip != $db_ip) {
             if ($_SERVER['HTTP_USER_AGENT'] != $db_agent) {
-                $this->deleteSession($sid);
+                $this->deleteSessionById($sid);
 
                 return false;
             }
