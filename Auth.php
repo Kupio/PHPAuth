@@ -339,7 +339,7 @@ class Auth
         }
 
         $addRequest = $this->addRequest($query->fetch(\PDO::FETCH_ASSOC)['id'], $email, "reset");
-        if (['error'] == 1) {
+        if ($addRequest['error'] == 1) {
             $this->addAttempt();
 
             $return['message'] = $addRequest['message'];
@@ -534,8 +534,6 @@ class Auth
             return false;
         }
 
-        $this->deleteExpiredSessions($uid);
-
         $query = $this->dbh->prepare('SELECT id, uid, expiredate, ip, agent, cookie_crc FROM '.$this->configVal("TABLE_SESSIONS").' WHERE hash = ?');
         $query->execute(array($hash));
 
@@ -552,6 +550,12 @@ class Auth
         $db_ip = $row['ip'];
         $db_agent = $row['agent'];
         $db_cookie = $row['cookie_crc'];
+
+        if ($currentdate > $expiredate) {
+            $this->deleteExpiredSessions($uid);
+
+            return false;
+        }
 
         if ($ip != $db_ip) {
             if ($_SERVER['HTTP_USER_AGENT'] != $db_agent) {
@@ -1049,13 +1053,7 @@ class Auth
             return $return;
         }
 
-        if(password_verify($password, $user['password'])) {
-            $this->addAttempt();
-            $this->deleteRequest($data['id']);
 
-            $return['message'] = "newpassword_match";
-            return $return;
-        }
 
         $password = $this->getHash($password, $user['salt']);
 
