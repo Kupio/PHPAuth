@@ -181,6 +181,27 @@ class Auth
         return $return;
     }
 
+    public function usersByRole($role)
+    {
+        $return['error'] = 1;
+
+        $query = $this->dbh->prepare('SELECT id FROM '.$this->configVal("TABLE_ROLES").' WHERE role=?');
+        $query->execute(array($role));
+
+        $roleid = $query->fetchColumn();
+
+        $query = $this->dbh->prepare('SELECT user_id FROM '.$this->configVal("TABLE_USER_ROLES").' WHERE role_id=?');
+        $query->execute(array($roleid));
+
+        $result = $query->fetchAll();
+
+        $func = function($value) {
+            return $value['user_id'];
+        };
+
+        return array_map($func, $result);
+    }
+
     /*
     * Creates a new user, adds them to database
     * @param string $email
