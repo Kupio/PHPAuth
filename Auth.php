@@ -190,7 +190,7 @@ class Auth
 
         $roleid = $query->fetchColumn();
 
-        $query = $this->dbh->prepare('SELECT user_id FROM '.$this->configVal("TABLE_USER_ROLES").' WHERE role_id=?');
+        $query = $this->dbh->prepare('SELECT user_id FROM '.$this->configVal("TABLE_USER_ROLES").' left join '.$this->configVal("TABLE_USERS").' on admin_auth_users.id = user_id  WHERE role_id=? AND isactive=1');
         $query->execute(array($roleid));
 
         $result = $query->fetchAll();
