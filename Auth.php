@@ -190,7 +190,7 @@ class Auth
 
         $roleid = $query->fetchColumn();
 
-        $query = $this->dbh->prepare('SELECT user_id FROM '.$this->configVal("TABLE_USER_ROLES").' left join '.$this->configVal("TABLE_USERS").' on admin_auth_users.id = user_id  WHERE role_id=? AND isactive=1');
+        $query = $this->dbh->prepare('SELECT user_id FROM '.$this->configVal("TABLE_USER_ROLES").' left join '.$this->configVal("TABLE_USERS").' on '.$this->configVal("TABLE_USERS").'.id = user_id  WHERE role_id=? AND isactive=1');
         $query->execute(array($roleid));
 
         $result = $query->fetchAll();
@@ -537,6 +537,15 @@ class Auth
         return $query->fetch(\PDO::FETCH_ASSOC)['uid'];
     }
 
+    public function isPasswordChangeRequired($uid)
+    {
+        if ($this->getUser($uid)['forcechange'] == 1) {
+            return true;
+        }
+
+        return false;
+    }
+
     /*
     * Function to check if a session is valid
     * @param string $hash
@@ -705,7 +714,7 @@ class Auth
 
     public function getUser($uid)
     {
-        $query = $this->dbh->prepare('SELECT username, password, email, salt, isactive FROM '.$this->configVal("TABLE_USERS").' WHERE id = ?');
+        $query = $this->dbh->prepare('SELECT username, password, email, salt, isactive, forcechange FROM '.$this->configVal("TABLE_USERS").' WHERE id = ?');
         $query->execute(array($uid));
 
         if ($query->rowCount() == 0) {
@@ -1086,7 +1095,7 @@ class Auth
 
         $password = $this->getHash($password, $user['salt']);
 
-        $query = $this->dbh->prepare('UPDATE '.$this->configVal("TABLE_USERS").' SET password = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.$this->configVal("TABLE_USERS").' SET password = ?, forcechange = 0 WHERE id = ?');
         $query->execute(array($password, $uid));
 
         if ($query->rowCount() == 0) {
@@ -1243,7 +1252,7 @@ class Auth
             return $return;
         }
 
-        $query = $this->dbh->prepare('UPDATE '.$this->configVal('TABLE_USERS').' SET password = ? WHERE id = ?');
+        $query = $this->dbh->prepare('UPDATE '.$this->configVal('TABLE_USERS').' SET password = ?, forcechange = 0 WHERE id = ?');
         $query->execute(array($newpass, $uid));
 
         $return['error'] = 0;

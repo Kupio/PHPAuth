@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS `auth_users` (
   `email` varchar(100) DEFAULT NULL,
   `salt` varchar(22) DEFAULT NULL,
   `isactive` tinyint(1) NOT NULL DEFAULT '0',
-  `dt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `dt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `forcechange` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `auth_roles` (
