@@ -750,6 +750,12 @@ class Auth
         return $data;
     }
 
+    public function forcePasswordChange($uid)
+    {
+        $query = $this->dbh->prepare('UPDATE '.$this->configVal('TABLE_USERS').' SET forcechange=1 WHERE id=?');
+        return $query->execute(array($uid));
+    }
+
     /*
     * Allows a user to delete their account
     * @param int $uid
@@ -1385,6 +1391,7 @@ class Auth
 
         return false;
     }
+
 
     /*
     * Adds an attempt to database
