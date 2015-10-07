@@ -117,6 +117,7 @@ class Auth
 
         $return['error'] = 0;
         $return['message'] = "logged_in";
+        $return['uid'] = $uid;
 
         $return['hash'] = $sessiondata['hash'];
         $return['expire'] = $sessiondata['expiretime'];
@@ -1267,6 +1268,17 @@ class Auth
     }
 
     /*
+
+
+
+
+
+
+
+
+
+
+
     * Gets a user's email address by UID
     * @param int $uid
     * @return string $email
