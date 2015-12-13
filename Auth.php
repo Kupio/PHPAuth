@@ -1267,18 +1267,8 @@ class Auth
         return $return;
     }
 
+
     /*
-
-
-
-
-
-
-
-
-
-
-
     * Gets a user's email address by UID
     * @param int $uid
     * @return string $email
