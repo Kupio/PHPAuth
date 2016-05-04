@@ -328,6 +328,12 @@ class Auth
         return $return;
     }
 
+    /* For activation from admin and invites, ignoring activation keys */
+    public function forceActivate($uid) {
+        $query = $this->dbh->prepare('UPDATE '.$this->configVal("TABLE_USERS").' SET isactive = ? WHERE id = ?');
+        $query->execute(array(1, $uid));
+    }
+
     /*
     * Creates a reset key for an email address and sends email
     * @param string $email
