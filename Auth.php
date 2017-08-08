@@ -408,7 +408,7 @@ class Auth
 
     public function getHash($string, $salt)
     {
-        return password_hash($string, PASSWORD_BCRYPT, ['salt' => $salt, 'cost' => $this->configVal("BCRYPT_COST")]);
+        return password_hash($string, PASSWORD_BCRYPT, ['cost' => $this->configVal("BCRYPT_COST")]);
     }
 
     /*
@@ -694,7 +694,10 @@ class Auth
             $return['email_url'] = $addRequest['email_url'];
         }
 
-        $salt = substr(strtr(base64_encode(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM)), '+', '.'), 0, 22);
+        $true = true; /* Because PHP is weird. Must pass variable by reference. */
+        $salt = substr(strtr(base64_encode(openssl_random_pseudo_bytes(22, $true)), '+', '.'), 0, 22);
+        /* Salt is ignored. As of PHP 7.0, salt is part of the hash, but we store salt anyway because we
+         * use it in other things. */
 
         $username = htmlentities(strtolower($username));
         $password = $this->getHash($password, $salt);
